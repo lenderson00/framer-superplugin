@@ -1,0 +1,23 @@
+{
+  "name": "@framerplugin/config",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.ts",
+  "files": [
+    "eslint-preset.ts",
+    "prettier-config.ts",
+    "tsconfig.json"
+  ],
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.28.1"
+  },
+  "devDependencies": {
+    "@types/eslint": "^8.4.0",
+    "eslint": "^8.48.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.0.0"
+  }
+}
