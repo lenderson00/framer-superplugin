@@ -16,6 +16,7 @@
   },
   "packageManager": "bun@1.0.0",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/examples/*"
   ]
 }

@@ -118,7 +118,7 @@ out
 .template
 
 # Nuxt.js build / generate output
-
+.example
 .nuxt
 dist
 
