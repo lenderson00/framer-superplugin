@@ -1,6 +1,5 @@
 import { log } from "@clack/prompts"
-import { exec } from "child_process"
-
+import { spawn } from "cross-spawn"
 /**
  * Spawn a package manager installation based on user preference.
  *
@@ -25,7 +24,7 @@ export async function install(
     /**
      * Spawn the installation process.
      */
-    const child = exec(`${packageManager} ${args.join(" ")}`, {
+    const child = spawn(packageManager, args, {
       env: {
         ...process.env,
         ADBLOCK: "1",
@@ -34,6 +33,7 @@ export async function install(
         NODE_ENV: "development",
         DISABLE_OPENCOLLECTIVE: "1",
       },
+      
     })
     child.on("close", (code: number) => {
       if (code !== 0) {

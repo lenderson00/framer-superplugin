@@ -7,6 +7,7 @@ import { commandName, version } from "./helpers/constants";
 import { setupCli } from "./helpers/setup-cli";
 import fs from "node:fs";
 import { getOnline } from "./helpers/is-online";
+import { setTimeout as sleep } from 'node:timers/promises';
 import url from "node:url";
 import path from "node:path";
 import { getPackageManager } from "./helpers/get-package-manger";
@@ -16,9 +17,6 @@ import { titleCase } from "./helpers/title-case";
 import os from "node:os";
 import crypto from "node:crypto";
 import { install } from "./helpers/install";
-
-// Adicione esta variável global para rastrear o processo de instalação
-let installProcess: ReturnType<typeof install> | null = null;
 
 process.on("SIGTERM", () => process.exit(0));
 
@@ -115,22 +113,13 @@ cli({
           log.warning(`${bold("Warning")}: git repo not initialized.`)
       }
   }
+  process.chdir(pluginPath)
+  spinner().start("Installing dependencies...")
 
+  await install(packagerManager, isOnline)
 
-
-
-  // spinner().start("Installing dependencies...")
-  // process.chdir(pluginPath)
-  // try {
-  //  // await install(packagerManager, isOnline)
-  // } catch (error) {
-  //   log.error(error as string)
-  // }
-  // process.chdir(cwd)
-  // spinner().stop("Dependencies installed")
-
-
-  
+  spinner().stop("Dependencies installed")
+  process.chdir(cwd)
 
   log.success(`Created Framer Super Plugin: “${bold(pluginName)}”`)
   
@@ -159,6 +148,8 @@ cli({
   }
 
   outro(`${red(blue("Enjoy your Superplugin!"))}`)
+
+  await sleep(1000);
 })
 
 

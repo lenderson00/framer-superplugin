@@ -115,7 +115,7 @@ web_modules/
 
 .next
 out
-.template
+.templates
 
 # Nuxt.js build / generate output
 .example
