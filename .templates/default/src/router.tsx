@@ -1,4 +1,4 @@
-import React, { cloneElement, useEffect, useState } from "react";
+import React, { cloneElement, useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useRoute, RouteComponentProps } from "wouter";
 import { AnimatePresence, MotionProps, motion } from "framer-motion";
 import { PluginPage } from "./components/plugin-page";
@@ -17,31 +17,56 @@ interface Match {
   route: PluginRoute;
 }
 
-const pluginRoutes: PluginRoute[] = [];
-
-const pages = import.meta.glob("./app/**/*.tsx", { eager: true });
-
-for (const path in pages) {
-  const page = pages[path] as { default: React.ComponentType<RouteComponentProps> };
-  pluginRoutes.push({
-    path: path.replace("./app/", "/").replace(".tsx", ""),
-    component: React.lazy(() => import(`${path}`)),
-    title: path.replace("./app/", "").replace(".tsx", "").replace("/", " ").replace("/", " "),
-  });
-}
-
-console.log(pluginRoutes)
 
 framer.showUI({
 
-  width: 360,
-  height: 120,
+  width: 500,
+  height: 500,
 });
 
-function useRoutes(routes: PluginRoute[]) {
+function useRoutes() {
   const [location] = useLocation();
   const [animationDirection, setAnimationDirection] = useState(1);
   const [isFirstPage, setIsFirstPage] = useState(true);
+  
+
+  const routes = useMemo(() => {
+    const pages = import.meta.glob("./app/**/*.tsx", { eager: true });
+    const pluginRoutes: PluginRoute[] = [];
+  
+    for (const path in pages) {
+
+      let pathname = path 
+                    .replace("./app/", "/")   // Remover o prefixo ./app/
+                    .replace(/\/(page|index)\.tsx$/, "") // Remover o sufixo /page.tsx ou /index.tsx
+                    .replace(".tsx", ""); // Remover a extensão .tsx
+
+      const dynamicSegments = pathname.match(/\[([^\]]+)\]/g);
+      if (dynamicSegments) {
+        dynamicSegments.forEach((segment) => {
+          const paramName = segment.replace("[", "").replace("]", "");
+          pathname = pathname.replace(segment, `:${paramName}`);
+        });
+      }
+
+      const PageImport = pages[path] as { default: React.ComponentType<any>, title: string | undefined };
+
+      pluginRoutes.push({
+        path: pathname ,
+        component: (props: RouteComponentProps) => {
+          const Component = PageImport.default;
+          const dynamicValue = getDynamicRouteValue(pathname, location);
+          return <Component {...props} {...dynamicValue} />;
+        },
+        title: PageImport.title
+      });
+    }
+
+    console.log(pluginRoutes)
+  
+    return pluginRoutes;
+  }, [location])
+  
   // Save the length of the `routes` array that we receive on the first render
   const [routesLen] = useState(() => routes.length);
 
@@ -80,6 +105,8 @@ function useRoutes(routes: PluginRoute[]) {
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const match = useRoute(fullPath);
+    console.log(match)
+ 
     matches.push({ match, route: { ...route, path: fullPath } });
 
     if (route.children) {
@@ -116,6 +143,7 @@ function useRoutes(routes: PluginRoute[]) {
           transition: { ease: "easeInOut", duration: 0.28 },
         };
 
+        //console.log(params)
     return (
       <motion.div {...(animationProps as MotionProps)}>
         <PluginPage title={title} animateForward={animationDirection === 1}>
@@ -128,8 +156,10 @@ function useRoutes(routes: PluginRoute[]) {
   }
 }
 
+
+
 export function Router() {
-  const page = useRoutes(pluginRoutes);
+  const page = useRoutes();
 
   return (
     <AnimatePresence>
@@ -144,4 +174,26 @@ export function Router() {
       )}
     </AnimatePresence>
   );
+}
+function getDynamicRouteValue(routePattern: string, path: string) {
+  if (!routePattern || !path) return null;
+
+  // checke if is dynamic [ ]
+  const isDynamic = routePattern.includes("[") && routePattern.includes("]");
+  if (!isDynamic) return null;
+  
+  const routeSegments = routePattern.replace("[", "").replace("]", "")
+  const pathSegments = path.includes(routeSegments) ? path.split(routeSegments)[1] : null;
+
+  // identify valor between []
+  const dynamicValue = routePattern.match(/\[([^\]]+)\]/);
+  if (!dynamicValue) return null;
+
+  const param = dynamicValue[1];
+
+
+  return {
+    [param]: pathSegments,
+    path: pathSegments
+  };
 }
