@@ -1,5 +1,5 @@
-import React, { cloneElement, useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useRoute, RouteComponentProps } from "wouter";
+import React, { cloneElement, useEffect, useMemo, useState } from "react";
+import { useLocation, useRoute, RouteComponentProps, Route, Switch } from "wouter";
 import { AnimatePresence, MotionProps, motion } from "framer-motion";
 import { PluginPage } from "./components/plugin-page";
 import { PageErrorBoundaryFallback } from "./components/page-error-bondary-fallback";
@@ -7,9 +7,8 @@ import { framer } from "framer-plugin";
 
 interface PluginRoute {
   path: string;
-  component: React.ComponentType<RouteComponentProps>;
+  component: React.ComponentType<RouteComponentProps<any>>;
   title?: string;
-  children?: PluginRoute[];
 }
 
 interface Match {
@@ -17,9 +16,7 @@ interface Match {
   route: PluginRoute;
 }
 
-
 framer.showUI({
-
   width: 500,
   height: 500,
 });
@@ -28,20 +25,44 @@ function useRoutes() {
   const [location] = useLocation();
   const [animationDirection, setAnimationDirection] = useState(1);
   const [isFirstPage, setIsFirstPage] = useState(true);
-  
+
 
   const routes = useMemo(() => {
     const pages = import.meta.glob("./app/**/*.tsx", { eager: true });
+
     const pluginRoutes: PluginRoute[] = [];
-  
+
     for (const path in pages) {
 
-      let pathname = path 
-                    .replace("./app/", "/")   // Remover o prefixo ./app/
-                    .replace(/\/(page|index)\.tsx$/, "") // Remover o sufixo /page.tsx ou /index.tsx
-                    .replace(".tsx", ""); // Remover a extensão .tsx
+      let pathname = path
+        .replace("./app/", "/")   // Remover o prefixo ./app/
+        .replace(/\/(page|index)\.tsx$/, "") // Remover o sufixo /page.tsx ou /index.tsx
+        .replace(".tsx", ""); // Remover a extensão .tsx
 
-      const dynamicSegments = pathname.match(/\[([^\]]+)\]/g);
+      const dynamicSegments = pathname.match(/\[\[?\.{3}([^\]]+)\]\]?|\[([^\]]+)\]/g);
+      if (dynamicSegments) {
+        dynamicSegments.forEach((segment) => {
+          if (segment.startsWith("[...")) {
+            // Catch-all segment [...param]
+            const paramName = segment.replace("[...", "").replace("]", "");
+            pathname = pathname.replace(segment, `:${paramName}/*`); // `*` indica um segmento de rota que pode ser múltiplo
+          } else if (segment.startsWith("[[...")) {
+            // Optional Catch-all segment [[...param]]
+            const paramName = segment.replace("[[...", "").replace("]]", "");
+            pathname = pathname.replace(segment, `:${paramName}/*?`); // `?*` indica que o segmento é opcional e pode ser múltiplo
+          } else {
+            // Parâmetro dinâmico normal [param]
+            const paramName = segment.replace("[", "").replace("]", "");
+            pathname = pathname.replace(segment, `:${paramName}`);
+          }
+        });
+      }
+
+      if (pathname === "") {
+        pathname = "/"
+      }
+
+
       if (dynamicSegments) {
         dynamicSegments.forEach((segment) => {
           const paramName = segment.replace("[", "").replace("]", "");
@@ -52,21 +73,17 @@ function useRoutes() {
       const PageImport = pages[path] as { default: React.ComponentType<any>, title: string | undefined };
 
       pluginRoutes.push({
-        path: pathname ,
+        path: pathname,
         component: (props: RouteComponentProps) => {
           const Component = PageImport.default;
-          const dynamicValue = getDynamicRouteValue(pathname, location);
-          return <Component {...props} {...dynamicValue} />;
+          return <Component {...props} />;
         },
         title: PageImport.title
       });
     }
-
-    console.log(pluginRoutes)
-  
     return pluginRoutes;
-  }, [location])
-  
+  }, [])
+
   // Save the length of the `routes` array that we receive on the first render
   const [routesLen] = useState(() => routes.length);
 
@@ -105,15 +122,10 @@ function useRoutes() {
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const match = useRoute(fullPath);
-    console.log(match)
- 
+
     matches.push({ match, route: { ...route, path: fullPath } });
 
-    if (route.children) {
-      for (const child of route.children) {
-        addToMatch(child, fullPath);
-      }
-    }
+
   };
 
   for (const route of routes) {
@@ -129,26 +141,28 @@ function useRoutes() {
     const animationProps = isFirstPage
       ? {}
       : {
-          initial: {
-            x: `${animationDirection * 100}vw`,
-            opacity: 0,
-            position: "absolute",
-          },
-          animate: { x: 0, opacity: 1, position: "relative" },
-          exit: {
-            x: `${animationDirection * -100}vw`,
-            opacity: 0,
-            position: "absolute",
-          },
-          transition: { ease: "easeInOut", duration: 0.28 },
-        };
+        initial: {
+          x: `${animationDirection * 100}vw`,
+          opacity: 0,
+          position: "absolute",
+        },
+        animate: { x: 0, opacity: 1, position: "relative" },
+        exit: {
+          x: `${animationDirection * -100}vw`,
+          opacity: 0,
+          position: "absolute",
+        },
+        transition: { ease: "easeInOut", duration: 0.28 },
+      };
 
-        //console.log(params)
+
+    const NewComponent = () => <Component params={getParsedParams(params)} />
+
     return (
       <motion.div {...(animationProps as MotionProps)}>
         <PluginPage title={title} animateForward={animationDirection === 1}>
           <PageErrorBoundaryFallback>
-            <Component params={params} />
+            <Route path={route.path} component={NewComponent} />
           </PageErrorBoundaryFallback>
         </PluginPage>
       </motion.div>
@@ -163,37 +177,41 @@ export function Router() {
 
   return (
     <AnimatePresence>
-      {page ? (
-        cloneElement(page, { key: location.pathname })
-      ) : (
-        <PluginPage title="404">
-          <p className="text-tertiary min-h-[280px] h-full  flex items-center justify-center">
-            Yikes! Looks like we lost that page.
-          </p>
-        </PluginPage>
-      )}
+      <Switch>
+        {page ? (
+          cloneElement(page, { key: location.pathname })
+        ) : (
+          <PluginPage title="404">
+            <p className="text-tertiary min-h-[280px] h-full  flex items-center justify-center">
+              Yikes! Looks like we lost that page.
+            </p>
+          </PluginPage>
+        )}
+      </Switch>
     </AnimatePresence>
   );
 }
-function getDynamicRouteValue(routePattern: string, path: string) {
-  if (!routePattern || !path) return null;
 
-  // checke if is dynamic [ ]
-  const isDynamic = routePattern.includes("[") && routePattern.includes("]");
-  if (!isDynamic) return null;
-  
-  const routeSegments = routePattern.replace("[", "").replace("]", "")
-  const pathSegments = path.includes(routeSegments) ? path.split(routeSegments)[1] : null;
+interface ParsedParams {
+  [key: string]: string | string[];
+}
 
-  // identify valor between []
-  const dynamicValue = routePattern.match(/\[([^\]]+)\]/);
-  if (!dynamicValue) return null;
+const getParsedParams = (params: any) => {
+  const parsedParams: ParsedParams = {};
 
-  const param = dynamicValue[1];
+  const keys = Object.keys(params).sort();
+  const lastKey = keys[keys.length - 1];
 
+  if (!lastKey) return parsedParams
 
-  return {
-    [param]: pathSegments,
-    path: pathSegments
-  };
+  const catchAllKey = keys.find(key => key.endsWith("*"));
+
+  if (catchAllKey && params[catchAllKey]) {
+    const combinedParams = [...new Set([(params["0"] || []), ...params[catchAllKey].split("/").filter(Boolean)])];
+    parsedParams[lastKey] = combinedParams;
+  } else {
+    parsedParams[lastKey] = params[lastKey]
+  }
+
+  return parsedParams
 }

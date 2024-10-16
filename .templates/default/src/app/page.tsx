@@ -9,8 +9,8 @@ const Page = () => {
   return (
     <motion.div className="p-4 flex flex-col gap-4">
       <p>Page - {isDevelopment ? "Development" : "Production"}</p>
-      <Link to="/about">About</Link>
-      <Link to="/about/post/123">Post</Link>
+      <Link to="/post">Post 1</Link>
+      <Link to="/post/2">Post 2</Link>
     </motion.div>
   );
 };
