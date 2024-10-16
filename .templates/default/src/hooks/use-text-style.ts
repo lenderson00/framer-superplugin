@@ -2,7 +2,7 @@ import { framer } from "framer-plugin"
 import { useEffect, useState } from "react"
 import { TextStyle } from "framer-plugin"
 
-export const useSubscribeTextStyle = () => {
+export const useTextStyle = () => {
     const [textStyles, setTextStyles] = useState<TextStyle[]>([])
 
     useEffect(() => {

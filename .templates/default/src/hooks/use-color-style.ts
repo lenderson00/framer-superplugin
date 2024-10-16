@@ -2,7 +2,7 @@ import { framer } from "framer-plugin"
 import { useEffect, useState } from "react"
 import { ColorStyle } from "framer-plugin"
 
-export const useSubscribeColorStyle = () => {
+export const useColorStyle = () => {
     const [colorStyles, setColorStyles] = useState<ColorStyle[]>([])
 
     useEffect(() => {
