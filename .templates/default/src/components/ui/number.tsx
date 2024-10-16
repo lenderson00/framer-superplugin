@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Slider } from "@/components/ui/slider"
 import NumberFlow, { Format } from '@number-flow/react'
 
