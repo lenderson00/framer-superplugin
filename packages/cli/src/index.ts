@@ -80,15 +80,15 @@ cli({
     parents: true,
     cwd: templatePath,
     rename(name) {
-        switch (name) {
-            case "gitignore":
-            case "eslintrc.json": {
-                return `.${name}`
-            }
-            default: {
-                return name
-            }
+      switch (name) {
+        case "gitignore":
+        case "eslintrc.json": {
+          return `.${name}`
         }
+        default: {
+          return name
+        }
+      }
     },
   })
 
@@ -108,10 +108,10 @@ cli({
   if (isInRepository()) {
     log.warn("Already in git repository. Skipping git init.")
   } else {
-      const didInitGit = tryGitInit(pluginPath)
-      if (!didInitGit) {
-          log.warning(`${bold("Warning")}: git repo not initialized.`)
-      }
+    const didInitGit = tryGitInit(pluginPath)
+    if (!didInitGit) {
+      log.warning(`${bold("Warning")}: git repo not initialized.`)
+    }
   }
   process.chdir(pluginPath)
   spinner().start("Installing dependencies...")
@@ -122,9 +122,9 @@ cli({
   process.chdir(cwd)
 
   log.success(`Created Framer Super Plugin: “${bold(pluginName)}”`)
-  
+
   log.info(
-      `View the Framer Docs: ${cyan("https://framer.com/developers/plugins")}`
+    `View the Framer Docs: ${cyan("https://framer.com/developers/plugins")}`
   )
 
   log.info(`View the Superplugins Docs: ${cyan("https://superplugins.framer.website")}`)
@@ -133,7 +133,7 @@ cli({
   log.message(`${bold("Just run:")}`)
 
   if (pluginPath !== process.cwd()) {
-      log.warn(`  cd ${pluginName}`)
+    log.warn(`  cd ${pluginName}`)
   }
 
   switch (packagerManager) {
@@ -156,38 +156,63 @@ cli({
 
 async function writePackageJson(pluginPath: string, pluginName: string) {
   const packageJson = {
-      name: pluginName,
-      private: true,
-      version: "0.0.0",
-      type: "module",
-      scripts: {
-          dev: "vite",
-          build: "vite build",
-          lint: "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-          preview: "vite preview",
-          pack: "npx framer-plugin-tools@latest pack",
-      },
-      dependencies: {
-          "framer-plugin": "^1",
-          react: "^18",
-          "react-dom": "^18",
-          "vite-plugin-mkcert": "^1",
-      },
-      devDependencies: {
-          "@eslint/js": "^9",
-          "@types/react-dom": "^18",
-          "@types/react": "^18",
-          "@vitejs/plugin-react-swc": "^3",
-          "@vitejs/plugin-react": "^4.3.1",
-          "eslint-plugin-react-hooks": "^5.1.0-rc.0",
-          "eslint-plugin-react-refresh": "^0.4.9",
-          "typescript-eslint": "^8.0.1",
-          "vite-plugin-framer": "^1",
-          eslint: "^9.9.0",
-          globals: "^15.9.0",
-          typescript: "^5.3",
-          vite: "^5",
-      },
+    name: pluginName,
+    private: true,
+    version: "0.0.0",
+    type: "module",
+    scripts: {
+      dev: "vite",
+      build: "vite build",
+      lint: "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+      preview: "vite preview",
+      pack: "npx framer-plugin-tools@latest pack",
+    },
+    "dependencies": {
+      "@number-flow/react": "^0.2.0",
+      "@radix-ui/react-alert-dialog": "^1.1.2",
+      "@radix-ui/react-context-menu": "^2.2.2",
+      "@radix-ui/react-icons": "^1.3.0",
+      "@radix-ui/react-select": "^2.1.2",
+      "@radix-ui/react-slider": "^1.2.1",
+      "@radix-ui/react-slot": "^1.1.0",
+      "@radix-ui/react-toggle": "^1.1.0",
+      "@radix-ui/react-toggle-group": "^1.1.0",
+      "@radix-ui/react-tooltip": "^1.1.3",
+      "@tanstack/react-query": "^5.59.15",
+      "class-variance-authority": "^0.7.0",
+      "clsx": "^2.1.1",
+      "framer-motion": "^11.11.9",
+      "framer-plugin": "^1",
+      "lucide-react": "^0.453.0",
+      "react": "^18",
+      "react-aria-components": "^1.4.1",
+      "react-dom": "^18",
+      "react-error-boundary": "^4.0.13",
+      "tailwind-merge": "^2.5.4",
+      "tailwindcss-animate": "^1.0.7",
+      "usehooks-ts": "^3.1.0",
+      "vite-plugin-mkcert": "^1",
+      "wouter": "^3.3.5"
+    },
+    "devDependencies": {
+      "@eslint/js": "^9",
+      "@types/react": "^18",
+      "@types/react-dom": "^18",
+      "@vitejs/plugin-react": "^4.3.1",
+      "@vitejs/plugin-react-swc": "^3",
+      "autoprefixer": "^10.4.20",
+      "eslint": "^9.9.0",
+      "eslint-plugin-react-hooks": "^5.1.0-rc.0",
+      "eslint-plugin-react-refresh": "^0.4.9",
+      "globals": "^15.9.0",
+      "postcss": "^8.4.47",
+      "tailwindcss": "^3.4.14",
+      "tailwindcss-motion": "^0.3.0-beta",
+      "typescript": "^5.3",
+      "typescript-eslint": "^8.0.1",
+      "vite": "^5",
+      "vite-plugin-framer": "^1"
+    }
   }
 
   await fs.promises.writeFile(path.join(pluginPath, "package.json"), JSON.stringify(packageJson, null, 2) + os.EOL)
@@ -209,7 +234,7 @@ async function writeHtmlIndex(pluginPath: string, pluginName: string) {
   </html>
   `
 
-    await fs.promises.writeFile(path.join(pluginPath, "index.html"), indexHtml + os.EOL)
+  await fs.promises.writeFile(path.join(pluginPath, "index.html"), indexHtml + os.EOL)
 }
 
 function shortId() {
@@ -222,8 +247,8 @@ async function writeFramerJson(pluginPath: string, pluginName: string) {
     name: titleCase(pluginName),
     modes: ["canvas"],
     icon: "/icon.svg",
-}
+  }
 
-await fs.promises.writeFile(path.join(pluginPath, "framer.json"), JSON.stringify(framerJSON, null, 2) + os.EOL)
+  await fs.promises.writeFile(path.join(pluginPath, "framer.json"), JSON.stringify(framerJSON, null, 2) + os.EOL)
 }
 
