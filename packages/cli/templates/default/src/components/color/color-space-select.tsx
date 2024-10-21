@@ -1,10 +1,8 @@
-import { FormEventHandler, useState } from 'react';
+import { useState } from 'react';
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
@@ -27,11 +25,11 @@ export function SelectColorSpace({ onChange }: SelectColorSpaceProps) {
       onValueChange={handleChange}
     >
       <SelectTrigger>
-        <SelectValue placeholder="RGB" />
+        <SelectValue placeholder="RGB" aria-label='Selected Value ' />
       </SelectTrigger>
       <SelectContent className="w-[50px]">
         {['HEX', 'RGB', 'HSL', 'HSB'].map((value) => (
-          <SelectItem key={value} value={value} className=" cursor-pointer flex items-center justify-center ">
+          <SelectItem aria-label="Select item" key={value} value={value} className=" cursor-pointer flex items-center justify-center ">
             {value}
           </SelectItem>
         ))}

@@ -1,28 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
 import { motion } from "framer-motion";
-import { Link } from "wouter";
-import { ColorPicker } from "@/components/color";
-import { SegmentedControls } from "@/components/ui/segmented-controls";
-import { NumberInput } from "@/components/ui/number";
-
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-
-const items = [
-  {
-    label: "Option 1",
-    value: "option-1",
-  },
-  {
-    label: "Option 2",
-    value: "option-2",
-  }
-];
-
 
 const Page = () => {
 

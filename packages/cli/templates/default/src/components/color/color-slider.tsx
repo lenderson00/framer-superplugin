@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { ColorSlider as ColorSliderAria, ColorSliderProps, ColorThumb, Label, SliderOutput, SliderTrack } from 'react-aria-components';
+import { ColorSlider as ColorSliderAria, ColorSliderProps, ColorThumb, SliderTrack } from 'react-aria-components';
 
 type Props = ColorSliderProps & {
   className?: string
@@ -7,11 +7,11 @@ type Props = ColorSliderProps & {
 
 export const ColorSlider: React.FC<Props> = (props) => {
 
-  return (<ColorSliderAria {...props} className={cn(props.className, "relative")}>
+  return (<ColorSliderAria {...props} className={cn(props.className, "relative")} aria-label='Color Slider' >
     <SliderTrack className="h-[10px] rounded-full relative" style={({ defaultStyle }) => ({
       background: `${defaultStyle.background},
             repeating-conic-gradient(#CCC 0% 25%, white 0% 50%) 50% / 16px 16px`
-    })}>
+    })} aria-label='Color Slider'>
       {
         props.channel === "alpha" && (
           <>
@@ -20,7 +20,7 @@ export const ColorSlider: React.FC<Props> = (props) => {
           </>
         )
       }
-      <ColorThumb className="w-[14px] h-[14px] shadow-thumb rounded-full top-1/2" />
+      <ColorThumb className="w-[14px] h-[14px] shadow-thumb rounded-full top-1/2" aria-label='Color Thumb' />
     </SliderTrack>
   </ColorSliderAria>)
 }
